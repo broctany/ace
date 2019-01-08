@@ -34,10 +34,11 @@ define(function(require, exports, module) {
 
 require("ace/lib/fixoldbrowsers");
 
+require("ace/ext/rtl");
+
 require("ace/multi_select");
-require("ace/ext/spellcheck");
 require("./inline_editor");
-require("./dev_util");
+var devUtil = require("./dev_util");
 require("./file_drop");
 
 var config = require("ace/config");
@@ -368,10 +369,15 @@ optionsPanel.add({
         }
     },
     More: {
+        "Rtl Text": {
+            path: "rtlText",
+            position: 900
+        },
         "Show token info": {
             path: "showTokenInfo",
-            position: 1000
-        }
+            position: 2000
+        },
+        "Text Input Debugger": devUtil.textInputDebugger
     }
 });
 
@@ -453,15 +459,25 @@ env.editSnippets = function() {
 };
 
 optionsPanelContainer.insertBefore(
-    dom.buildDom(["div", {style: "text-align:right;margin-right: 60px"}, 
-        ["button", {onclick: env.editSnippets}, "Edit Snippets"]]),
+    dom.buildDom(["div", {style: "text-align:right;margin-right: 60px"},
+        ["div", {}, 
+            ["button", {onclick: env.editSnippets}, "Edit Snippets"]],
+        ["div", {}, 
+            ["button", {onclick: function() {
+                var info = navigator.platform + "\n" + navigator.userAgent;
+                if (env.editor.getValue() == info)
+                    return env.editor.undo();
+                env.editor.setValue(info, -1);
+                env.editor.setOption("wrap", 80);
+            }}, "Show Browser Info"]],
+        devUtil.getUI()
+    ]),
     optionsPanelContainer.children[1]
 );
 
 require("ace/ext/language_tools");
 env.editor.setOptions({
     enableBasicAutocompletion: true,
-    enableLiveAutocompletion: false,
     enableSnippets: true
 });
 
